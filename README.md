@@ -143,6 +143,36 @@ var maxValue = function(grid) {
 };
 ```
 
+#### [剑指 Offer 49. 丑数](https://leetcode-cn.com/problems/chou-shu-lcof/)
+
+我们把只包含质因子 2、3 和 5 的数称作丑数（Ugly Number）。求按从小到大的顺序的第 n 个丑数。1, 2, 3, 4, 5, 6, 8, 9, 10, 12 是前 10 个丑数。
+
+dp[i]表示第i+1个丑数。某个丑数一定是因子2 3 5乘一个小丑数产生的。记录前三个分别乘以2 3 5小于当前丑数的小丑数们，则新的丑数就是这三个小丑数乘以2 3 5得到的较小的那个
+
+```
+var nthUglyNumber = function(n) {
+    if(n<=0){return -1}
+    let dp = Array(n).fill(0);
+    dp[0] = 1;
+    let id2=0,id3=0,id5=0;
+    for(let i=1;i<n;i++){
+    	// 第i+1个丑数就是：大于前一个数的最小的丑数
+        dp[i] = Math.min(dp[id2] * 2, Math.min(dp[id3] *3, dp[id5] * 5));
+        if(dp[i] === dp[id2]*2){
+            id2++;
+        }
+        if(dp[i] === dp[id3]*3){
+            id3++;
+        }
+        if(dp[i] === dp[id5]*5){
+            id5++;
+        }
+    }
+    console.log(dp)
+    return dp[n-1]
+};
+```
+
 ## 3 dfs
 
 #### [剑指 Offer 46. 把数字翻译成字符串](https://leetcode-cn.com/problems/ba-shu-zi-fan-yi-cheng-zi-fu-chuan-lcof/)
