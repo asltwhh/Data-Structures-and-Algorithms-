@@ -248,3 +248,166 @@ var lengthOfLongestSubstring = function (s) {
 };
 ```
 
+#### [剑指 Offer 57. 和为s的两个数字](https://leetcode-cn.com/problems/he-wei-sde-liang-ge-shu-zi-lcof/)
+
+简单
+
+输入一个**递增排序**的数组和一个数字s，在数组中查找两个数，使得它们的和正好是s。如果有多对数字的和等于s，则输出任意一对即可。
+
+示例 1：
+
+输入：nums = [2,7,11,15], target = 9
+输出：[2,7] 或者 [7,2]
+
+```
+var twoSum = function(nums, target) {
+    // 双指针
+    let i=0,j=nums.length-1;
+    while(i<j){
+        if(nums[i]+nums[j]>target){
+            j--;
+        }else if(nums[i]+nums[j]<target){
+            i++;
+        }else{
+            return [nums[i],nums[j]];
+        }
+    }
+};
+```
+
+## 5 二叉树
+
+#### [剑指 Offer 54. 二叉搜索树的第k大节点](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-di-kda-jie-dian-lcof/)
+
+分析：二叉搜索树，即中序遍历为增序排列
+
+中序遍历：左 根 右
+
+则右 根 左就是降序排列，得到降序排列的第k个即可
+
+```
+var kthLargest = function(root, k) {
+    // 方法2：堆排序
+    // 方法1：中序遍历，得到第k个
+    let count = 0,res=null;
+    var traverse = function(root){
+        if(root===null){return ;}
+        traverse(root.right);
+        count++;
+        if(count===k){
+            res = root.val;
+            return ;
+        }
+        traverse(root.left);
+    }
+    traverse(root);
+    return res;
+};
+```
+
+## 6 位运算
+
+#### [136. 只出现一次的数字](https://leetcode-cn.com/problems/single-number/)
+
+给定一个**非空**整数数组，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
+
+简单
+
+分析：异或：同为0，不同为1
+
+相同的两个数各个位上均相同，则其异或的结果为1；所以将nums中所有的数均异或一遍，结果就相当于两个只出现一次的数a,b异或的结果
+
+```
+var singleNumber = function(nums) {
+    return nums.reduce((a,b)=>a^b);
+};
+```
+
+#### [137. 只出现一次的数字 II](https://leetcode-cn.com/problems/single-number-ii/)
+
+给你一个整数数组 `nums` ，除某个元素仅出现 **一次** 外，其余每个元素都恰出现 **三次 。**请你找出并返回那个只出现了一次的元素。
+
+中等
+
+```
+```
+
+#### [260. 只出现一次的数字 III](https://leetcode-cn.com/problems/single-number-iii/)
+
+#### [剑指 Offer 56 - I. 数组中数字出现的次数](https://leetcode-cn.com/problems/shu-zu-zhong-shu-zi-chu-xian-de-ci-shu-lcof/)
+
+中等
+
+首先得到diff的最低位的1，diff1 = diff & -diff; 该位为1则表示：a,b在这一位的值是不同的。至于其它出现两次的num,则他们在这一位的值肯定是相同的，相异或的结果是0，所以就只会剩下a或者b
+
+ diff1只有1位为0，其余位均为1，则通过求diff1&num即可将所有的num分为两组，每一组的结果相异或即可得到一个数，两组的结果合并即是所求
+
+例如:1,2,3,4,2,1
+
+diff = 1^2^3^4^2^1 = 3^4 = 0110
+
+diff1 = 0010
+
+1&diff1=0   2&diff1=1  3&diff1=1 4&diff1=0
+
+所以num被分为了两组：1 4 1  和  2 3 2   两组分别异或的结果是4 和  3
+
+```
+var singleNumber = function(nums) {
+    var diff = nums.reduce((a,b)=>{
+        return a^b;
+    })
+    diff = diff & -diff;
+    let res = [0,0];
+    for(let i=0;i<nums.length;i++){
+        if(diff&nums[i]){
+            res[0] ^= nums[i];
+        }else{
+            res[1] ^= nums[i];
+        }
+    }
+    return res;
+};
+```
+
+## 7 滑动窗口：
+
+#### [剑指 Offer 57 - II. 和为s的连续正数序列](https://leetcode-cn.com/problems/he-wei-sde-lian-xu-zheng-shu-xu-lie-lcof/)
+
+输入一个正整数 target ，输出所有和为 target 的连续正整数序列（至少含有两个数）。
+
+序列内的数字由小到大排列，不同序列按照首个数字从小到大排列。
+
+示例 1：
+
+输入：target = 9
+输出：[[2,3,4],[4,5]]
+
+思路：左开右闭滑动窗口，两个指针控制滑动窗口的大小，如果滑动窗口中的数值和小于target,则数值和加上nums[j],j右移；如果大于target则和减去nums[i],i左移。如果等于，则保存结果，并且数值和减去nums[i],加上nums[j],i、j分别右移一位
+
+```
+var findContinuousSequence = function(target) {
+    let arr = [];
+    for(let i=0;i<target;i++){arr[i]=i+1;}
+    let sum = 0;
+    let res = [];
+    let i=0,j=0;
+    while(i<arr.length/2){
+        if(sum<target){
+            sum+=arr[j];
+            j++;
+        }else if(sum>target){
+            sum-=arr[i];
+            i++;
+        }else{
+            res.push(arr.slice(i,j));
+            sum += arr[j];
+            sum -= arr[i];
+            i++;
+            j++;
+        }
+    }
+    return res;
+};
+```
+
