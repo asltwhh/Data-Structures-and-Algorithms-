@@ -173,6 +173,93 @@ var nthUglyNumber = function(n) {
 };
 ```
 
+#### [剑指 Offer 60. n个骰子的点数](https://leetcode-cn.com/problems/nge-tou-zi-de-dian-shu-lcof/)
+
+难度中等245
+
+把n个骰子扔在地上，所有骰子朝上一面的点数之和为s。输入n，打印出s的所有可能的值出现的概率。
+
+你需要用一个浮点数数组返回答案，其中第 i 个元素代表这 n 个骰子所能掷出的点数集合中第 i 小的那个的概率。
+
+示例 1:
+
+输入: 1
+输出: [0.16667,0.16667,0.16667,0.16667,0.16667,0.16667]
+示例 2:
+
+输入: 2
+输出: [0.02778,0.05556,0.08333,0.11111,0.13889,0.16667,0.13889,0.11111,0.08333,0.05556,0.02778]
+
+分析：
+
+1个骰子，得到的结果：1~6
+
+2个骰子，得到的结果：2~12     n~n*6
+
+`dp[i][j]`表示i个骰子得到和为j的概率，则可以推出：
+
+`dp[3][3] = dp[1][1]*dp[2][2] + dp[1][2]*dp[2][1] + dp[1][3]*dp[2][0];`
+
+```
+ var dicesProbability = function(n) {
+    let dp = Array.from(Array(n+1),()=>Array(6*n+1).fill(0));
+    // 初始化，一个骰子掷出1~6的概率均为1/6，2个及以上骰子掷出0或者1的概率为0
+    for(let i=1;i<7;i++){
+        dp[1][i] = 1/6.0;
+    }    
+    // 从 至少两个骰子掷出2开始
+    for(let i=2;i<n+1;i++){
+        // i个骰子
+        for(let j=i;j<6*i+1;j++){
+            // 骰出几 
+            for(let k=1;k<7;k++){
+                if(i-k>=0 && j-k>=0){
+                    // i个骰子和为j  1个骰子为k  i-1个骰子和为j-k
+                    dp[i][j] += dp[1][k]*dp[i-1][j-k];
+                }
+            }
+        }
+    }
+    // 记录所有结果的值
+    let result = Array(5*n+1).fill(0);
+    let index = 0;
+    // n个骰子得到的结果范围： n~6*n
+    for(let i=n;i<6*n+1;i++){
+        result[index++] = dp[n][i];
+    }
+    return result;
+};
+```
+
+#### [343. 整数拆分](https://leetcode-cn.com/problems/integer-break/)
+
+难度中等527
+
+给定一个正整数 *n*，将其拆分为**至少**两个正整数的和，并使这些整数的乘积最大化。 返回你可以获得的最大乘积。
+
+**示例 1:**
+
+```
+输入: 2
+输出: 1
+解释: 2 = 1 + 1, 1 × 1 = 1。
+```
+
+分析：dp[i]表示整数i拆分为两个整数后得到的最大乘积  `
+
+```
+var integerBreak = function(n) {
+    var dp = Array(n+1).fill(0);
+    // console.log(dp)
+    for(let i=2;i<n+1;i++){
+        for(let k=1;k<i;k++){
+            dp[i] = Math.max(dp[i],k*dp[i-k],k*(i-k));
+        }
+    }
+    return dp[n];
+};
+```
+
 ## 3 dfs
 
 #### [剑指 Offer 46. 把数字翻译成字符串](https://leetcode-cn.com/problems/ba-shu-zi-fan-yi-cheng-zi-fu-chuan-lcof/)
@@ -307,6 +394,39 @@ var kthLargest = function(root, k) {
 
 ## 6 位运算
 
+这里涉及到js中的位运算符，位运算符只对整数起作用。js中所有数都是以64位浮点数的形式存储，但是做位运算时，会先将数值转化为32位带符号的整数，位运算的结果也是一个32位带符号的整数。
+
+小数转为带符号整数：直接将小数位去除，只取整数位
+
+将数值num转换为32位带符号整数：`num=num | 0;`,无论num是整数还是小数
+
+第32位是符号位，所以有符号整数的范围是：-2^31 ~ 2^31-1
+
+```
+1|0    1
+-1|0   -1
+Math.pow(2,32)|1   0  // 2^32 是二进制位的第33位，溢出，直接被截断
+(Math.pow(2,32)+1)|1   1      
+(Math.pow(2,32)-1)|1   -1
+```
+
+左移运算符：`<<`,尾部补0，最高位的符号位一起移动，左移i位相当于 `num*(2^i)`
+
+右移运算符：>>,正数头部补0，负数头部补1，最高位参与移动，左移i位相当于 `Math.floor(num/(2^i))`。
+
+无符号右移：`>>>`,头部一律补0，不考虑符号位，此运算总是得到正值。
+
+比较常用的数值位运算操作：
+
+```
+n&(n-1)  去除n的二进制位中最低的那一位1
+n&(-n)   得到n的二进制位中最低的那一位1
+& 与    &=
+| 或    |=
+^ 异或  ^=
+! 非   
+```
+
 #### [136. 只出现一次的数字](https://leetcode-cn.com/problems/single-number/)
 
 给定一个**非空**整数数组，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
@@ -321,15 +441,6 @@ var kthLargest = function(root, k) {
 var singleNumber = function(nums) {
     return nums.reduce((a,b)=>a^b);
 };
-```
-
-#### [137. 只出现一次的数字 II](https://leetcode-cn.com/problems/single-number-ii/)
-
-给你一个整数数组 `nums` ，除某个元素仅出现 **一次** 外，其余每个元素都恰出现 **三次 。**请你找出并返回那个只出现了一次的元素。
-
-中等
-
-```
 ```
 
 #### [260. 只出现一次的数字 III](https://leetcode-cn.com/problems/single-number-iii/)
@@ -364,6 +475,31 @@ var singleNumber = function(nums) {
             res[0] ^= nums[i];
         }else{
             res[1] ^= nums[i];
+        }
+    }
+    return res;
+};
+```
+
+#### [137. 只出现一次的数字 II](https://leetcode-cn.com/problems/single-number-ii/)
+
+给你一个**整数数组** `nums` ，除某个元素仅出现 **一次** 外，其余每个元素都恰出现 **三次 。**请你找出并返回那个只出现了一次的元素。
+
+中等
+
+js中整数都是以32位二进制位存储的，统计每一位上所有num的数值(1或者0)的和，最后除以3取余，然后每一位的和加起来即可得到最终的结果
+
+```
+var singleNumber = function(nums) {
+    let res = 0;
+    for(let i=0;i<32;i++){
+        let count = 0;
+        for(let num of nums){
+            count += (num>>>i)&1;
+        }
+        // console.log(count)
+        if(count%3){
+            res |= 1<<i;
         }
     }
     return res;
@@ -408,6 +544,62 @@ var findContinuousSequence = function(target) {
         }
     }
     return res;
+};
+```
+
+## 8 队列
+
+#### [剑指 Offer 59 - II. 队列的最大值](https://leetcode-cn.com/problems/dui-lie-de-zui-da-zhi-lcof/)
+
+请定义一个队列并实现函数 max_value 得到队列里的最大值，要求函数max_value、push_back 和 pop_front 的均摊时间复杂度都是O(1)。
+
+若队列为空，pop_front 和 max_value 需要返回 -1
+
+输入: 
+["MaxQueue","push_back","push_back","max_value","pop_front","max_value"]
+[[],[1],[2],[],[],[]]
+输出: [null,null,null,2,1,2]
+
+```
+var MaxQueue = function() {
+    this.queue = [];
+    this.maxQueue = [];
+};
+
+/**
+ * @return {number}
+ */
+MaxQueue.prototype.max_value = function() {
+    // maxQueue的队头元素一定是当前queue中的最大元素
+    return this.queue.length ? this.maxQueue[0] : -1;
+};
+
+/** 
+ * @param {number} value
+ * @return {void}
+ */
+MaxQueue.prototype.push_back = function(value) {
+    // 去除比当前值小的最大值，保证队头元素是当前queue中最大的元素
+    while(value>this.maxQueue[this.maxQueue.length-1]){
+        this.maxQueue.pop();
+    }
+    this.queue.push(value);
+    // 将当前值放入最大值队列中
+    this.maxQueue.push(value);
+};
+
+/**
+ * @return {number}
+ */
+MaxQueue.prototype.pop_front = function() {
+    if (this.queue.length === 0) {
+        return -1;
+    }
+    let temp = this.queue.shift();
+    if (this.maxQueue[0] === temp) {
+        this.maxQueue.shift();
+    }
+    return temp;
 };
 ```
 
