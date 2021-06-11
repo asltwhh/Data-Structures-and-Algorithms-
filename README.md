@@ -1,3 +1,9 @@
+## 数量级与时间复杂度
+
+![](./img/01.png)
+
+一般leetcode给出的超时限制是1s,上面给出的应该是1s内各个复杂度可以处理的数量级。比如，当n是10^4数量级时，可以接受O(nlogn）、O(n)等复杂度的算法。O(n^2)的算法就可能会超时了
+
 ## 1. 排序
 
  ### 1.1 快速排序
@@ -600,6 +606,89 @@ MaxQueue.prototype.pop_front = function() {
         this.maxQueue.shift();
     }
     return temp;
+};
+```
+
+## 9 map
+
+#### [剑指 Offer 61. 扑克牌中的顺子](https://leetcode-cn.com/problems/bu-ke-pai-zhong-de-shun-zi-lcof/)
+
+难度简单
+
+从扑克牌中随机抽5张牌，判断是不是一个顺子，即这5张牌是不是连续的。2～10为数字本身，A为1，J为11，Q为12，K为13，而大、小王为 0 ，大小王可以看成任意数字（即0可以看成是任何数字）。A 不能视为 14。
+
+**示例 1:**
+
+输入: [1,2,3,4,5]
+输出: True
+
+分析：分析可知数字的范围为：【0,13】
+
+1. 没有大小王的情况：顺子一定存在max-min<=4
+2. 存在大小王，但不将0考虑进去：
+   1. 则顺子一定存在max-min<4
+   2. 另外，排除一种情况：[1,13]中存在重复数值，则一定不能构成顺子
+
+```
+var isStraight = function(nums) {
+    var map = new Map();
+    let max = Number.MIN_SAFE_INTEGER,min=Number.MAX_SAFE_INTEGER;
+    for(let i=0;i<nums.length;i++){
+        // 遇到0，即大小王，则不算
+        if(nums[i]===0){continue;}
+        // 如果[1,13]中某个元素已经统计过，则必定不能构成重复元素
+        if(map.has(nums[i])){return false;}
+        map.set(nums[i],1);
+        // 计算最大值和最小值
+        max = Math.max(max,nums[i]);
+        min = Math.min(min,nums[i]);
+    }
+    // 最大值和最大小值差值小于等于4则说明可以连成顺子
+    return max-min<=4;
+};
+```
+
+## 10 数组
+
+#### [剑指 Offer 62. 圆圈中最后剩下的数字](https://leetcode-cn.com/problems/yuan-quan-zhong-zui-hou-sheng-xia-de-shu-zi-lcof/)
+
+难度简单
+
+0,1,···,n-1这n个数字排成一个圆圈，从数字0开始，每次从这个圆圈里删除第m个数字（删除后从下一个数字开始计数）。求出这个圆圈里剩下的最后一个数字。
+
+例如，0、1、2、3、4这5个数字组成一个圆圈，从数字0开始每次删除第3个数字，则删除的前4个数字依次是2、0、4、1，因此最后剩下的数字是3。
+
+**示例 1：**
+
+输入: n = 5, m = 3
+输出: 3
+
+**限制:**
+
+- `1 <= n <= 10^5`
+- `1 <= m <= 10^6`
+
+分析：
+
+1. 第一个删除的索引是idx=(m-1%n),因为索引从0开始。
+2. 删除第一个数后，数组元素个数变成n-1,而idx处的后一位元素又会补位，所以第二位删除的元素索引就变成了(idx+m-1)%(n-1)
+3. 所以被删除元素的索引就是：idx = （idx+m-1)%(n--)
+4. 另外，这个题目需要注意：参数的数量级问题。以上思路的解题时间复杂度为O(n^2),则时间复杂度达到了10^10，在leetcode中使用了9260ms，接近1秒。**好像超出1s就超时了？？？**
+
+```
+var lastRemaining = function(n, m) {
+    // 假定第一个删除的数字的索引是idx,则第二个删除的索引应该是(idx+m-1)%(n-1)
+    let arr =Array(n);
+    for(let i=0;i<n;i++){
+        arr[i] = i;
+    }
+    let idx = 0;
+    while(n>1){
+        idx = (idx+m-1)%(n--);
+        arr.splice(idx,1);
+    }
+    // console.log(arr)
+    return arr[0];
 };
 ```
 
