@@ -266,6 +266,60 @@ var integerBreak = function(n) {
 };
 ```
 
+#### [剑指 Offer 63. 股票的最大利润](https://leetcode-cn.com/problems/gu-piao-de-zui-da-li-run-lcof/)
+
+难度中等
+
+假设把某股票的价格按照时间先后顺序存储在数组中，请问买卖该股票**一次**可能获得的最大利润是多少？
+
+**示例 1:**
+
+```
+输入: [7,1,5,3,6,4]
+输出: 5
+解释: 在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+     注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格。
+```
+
+代码：
+
+```
+var maxProfit = function(prices) {
+    if(prices.length===0){return 0;}
+    var dp = Array.from(Array(prices.length),()=>Array(2).fill(0));
+    // dp[i][0]表示第i天买入时可能获得的最大利润
+    // dp[i][1]表示第i天卖出时可能获得的最大利润
+    dp[0][0] = -prices[0]; // 第0天买入
+    dp[0][1] = 0;    // 第0天卖出
+    for(let i=1;i<prices.length;i++){
+        // 第i天买入    第i-1天买入   第i天卖入
+        dp[i][0] = Math.max(dp[i-1][0],-prices[i]);
+        // 第i天卖出    第i-1天买入   第i-1天卖出
+        dp[i][1] = Math.max(dp[i-1][0]+prices[i],dp[i-1][1]);
+    }
+    return dp[prices.length-1][1];
+};
+```
+
+优化：
+
+```
+var maxProfit = function(prices) {
+    if(prices.length===0){return 0;}
+    dp0 = -prices[0]; // 第0天买入
+    dp1 = 0;    // 第0天卖出
+    for(let i=1;i<prices.length;i++){
+        // 第i天买入    第i-1天买入   第i天卖入
+        dp0 = Math.max(dp0,-prices[i]);
+        // 第i天卖出    第i-1天买入   第i-1天卖出
+        dp1 = Math.max(dp0+prices[i],dp1);
+    }
+    return dp1;
+};
+```
+
+
+
 ## 3 dfs
 
 #### [剑指 Offer 46. 把数字翻译成字符串](https://leetcode-cn.com/problems/ba-shu-zi-fan-yi-cheng-zi-fu-chuan-lcof/)
@@ -512,6 +566,30 @@ var singleNumber = function(nums) {
 };
 ```
 
+#### [剑指 Offer 65. 不用加减乘除做加法](https://leetcode-cn.com/problems/bu-yong-jia-jian-cheng-chu-zuo-jia-fa-lcof/)
+
+难度简单
+
+写一个函数，求两个整数之和，要求在函数体内不得使用 “+”、“-”、“*”、“/” 四则运算符号。
+
+题解：[面试题65. 不用加减乘除做加法（位运算，清晰图解）](https://leetcode-cn.com/problems/bu-yong-jia-jian-cheng-chu-zuo-jia-fa-lcof/solution/mian-shi-ti-65-bu-yong-jia-jian-cheng-chu-zuo-ji-7/)
+
+ ```
+ var add = function(a, b) {
+     while(b!==0){
+         // 进位
+         c = (a&b)<<1;
+         // 非进位和
+         a ^= b;
+         // 保存进位
+         b = c;
+     }
+     return a;
+ };
+ ```
+
+![](./img/02.png)
+
 ## 7 滑动窗口：
 
 #### [剑指 Offer 57 - II. 和为s的连续正数序列](https://leetcode-cn.com/problems/he-wei-sde-lian-xu-zheng-shu-xu-lie-lcof/)
@@ -552,6 +630,34 @@ var findContinuousSequence = function(target) {
     return res;
 };
 ```
+
+#### [剑指 Offer 64. 求1+2+…+n](https://leetcode-cn.com/problems/qiu-12n-lcof/)
+
+难度中等337
+
+求 `1+2+...+n` ，要求不能使用乘除法、for、while、if、else、switch、case等关键字及条件判断语句（A?B:C）。
+
+思路：三种解决办法：
+
+1. n*(n+1)/2
+2. for或者while循环
+3. &&
+   1. A && B  A的结果为true则执行B，结果就是B的结果
+   2. A || B     A的结果为true,则直接返回true         A的结果为false,则返回B 的结果
+
+ ```
+ n>1,则递归执行dfs(n-1),如果n<1,即当n=1时，直接返回res+1,依次添加别的值
+ var sumNums = function(n) {
+     let res = 0;
+     let dfs = function(n){
+         n>1 && dfs(n-1)>0;
+         res += n;
+         return res;
+     }
+     dfs(n);
+     return res;
+ };
+ ```
 
 ## 8 队列
 
@@ -689,6 +795,34 @@ var lastRemaining = function(n, m) {
     }
     // console.log(arr)
     return arr[0];
+};
+```
+
+#### [剑指 Offer 66. 构建乘积数组](https://leetcode-cn.com/problems/gou-jian-cheng-ji-shu-zu-lcof/)
+
+难度中等123
+
+给定一个数组 `A[0,1,…,n-1]`，请构建一个数组 `B[0,1,…,n-1]`，其中 `B[i]` 的值是数组 `A` 中除了下标 `i` 以外的元素的积, 即 `B[i]=A[0]×A[1]×…×A[i-1]×A[i+1]×…×A[n-1]`。不能使用除法。
+
+```
+var constructArr = function(a) {
+    let len = a.length;
+    if(len===0){return [];}
+    let left = Array(len).fill(1),right=Array(len).fill(1);
+    // 先计算每个索引处左侧所有元素的乘积  left[i]=left[0]*...*left[i-1]
+    for(let i=1;i<len;i++){
+        left[i] = left[i-1]*a[i-1];
+    }
+    // right[i] = right[i+1]*...*right[len-1]
+    for(let i=len-2;i>=0;i--){
+        right[i] = right[i+1]*a[i+1];
+    }
+    let b=[];
+    // b[i]=left[i]*right[i]
+    for(let i=0;i<len;i++){
+        b[i] = left[i]*right[i];
+    }
+    return b;
 };
 ```
 
