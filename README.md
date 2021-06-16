@@ -452,6 +452,60 @@ var kthLargest = function(root, k) {
 };
 ```
 
+#### [剑指 Offer 68 - II. 二叉树的最近公共祖先](https://leetcode-cn.com/problems/er-cha-shu-de-zui-jin-gong-gong-zu-xian-lcof/)
+
+难度简单
+
+给定一个二叉树, 找到该树中两个指定节点的最近公共祖先。
+
+百度百科中最近公共祖先的定义为：“对于有根树 T 的两个结点 p、q，最近公共祖先表示为一个结点 x，满足 x 是 p、q 的祖先且 x 的深度尽可能大（一个节点也可以是它自己的祖先）。”
+
+```
+var lowestCommonAncestor = function(root, p, q) {
+    if(root===null){return null;}
+    if(root === p || root===q){
+        return root;
+    }
+    let p1 = lowestCommonAncestor(root.left,p,q);
+    let p2 = lowestCommonAncestor(root.right,p,q);
+    // 左右子树中均存在，则表明root是当前的最近公共节点
+    if(p1 && p2){
+        return root;
+    }
+    if(p1){return p1;}
+    return p2;
+};
+```
+
+#### [剑指 Offer 68 - I. 二叉搜索树的最近公共祖先](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-zui-jin-gong-gong-zu-xian-lcof/)
+
+难度简单
+
+给定一个二叉搜索树, 找到该树中两个指定节点的最近公共祖先。
+
+[百度百科](https://baike.baidu.com/item/最近公共祖先/8918834?fr=aladdin)中最近公共祖先的定义为：“对于有根树 T 的两个结点 p、q，最近公共祖先表示为一个结点 x，满足 x 是 p、q 的祖先且 x 的深度尽可能大（**一个节点也可以是它自己的祖先**）。”
+
+```
+当然直接用上面68二的方法也可以，但是考虑到是二叉搜索树，可以利用它的性质：
+var lowestCommonAncestor = function(root, p, q) {
+    // 先获取到两者之中的大和小
+    let max = p.val > q.val ? p : q;
+    let min = p.val > q.val ? q : p;
+    
+    let dfs = function(root,p,q){
+        if(root===null){return null;}
+        if(root.val<=max.val && root.val>=min.val){
+            return root;
+        }
+        if(root.val>max.val){
+            return dfs(root.left,p,q);
+        }
+        return dfs(root.right,p,q);
+    }
+    return dfs(root,min,max);
+};
+```
+
 ## 6 位运算
 
 这里涉及到js中的位运算符，位运算符只对整数起作用。js中所有数都是以64位浮点数的形式存储，但是做位运算时，会先将数值转化为32位带符号的整数，位运算的结果也是一个32位带符号的整数。
@@ -659,7 +713,98 @@ var findContinuousSequence = function(target) {
  };
  ```
 
-## 8 队列
+#### [剑指 Offer 59 - I. 滑动窗口的最大值](https://leetcode-cn.com/problems/hua-dong-chuang-kou-de-zui-da-zhi-lcof/)
+
+难度困难276
+
+给定一个数组 `nums` 和滑动窗口的大小 `k`，请找出所有滑动窗口里的最大值。
+
+**示例:**
+
+```
+输入: nums = [1,3,-1,-3,5,3,6,7], 和 k = 3
+输出: [3,3,5,5,6,7] 
+解释: 
+
+  滑动窗口的位置                最大值
+---------------               -----
+[1  3  -1] -3  5  3  6  7       3
+ 1 [3  -1  -3] 5  3  6  7       3
+ 1  3 [-1  -3  5] 3  6  7       5
+ 1  3  -1 [-3  5  3] 6  7       5
+ 1  3  -1  -3 [5  3  6] 7       6
+ 1  3  -1  -3  5 [3  6  7]      7
+```
+
+注意：**你可以假设 *k* 总是有效的，在输入数组不为空的情况下，1 ≤ k ≤ 输入数组的大小。**
+
+暴力解法：O(nk)
+
+```
+var maxSlidingWindow = function(nums, k) {
+    if(nums.length===0){
+        return [];
+    }
+    let i=0,j=k-1,maxArr=[],max=nums[0];
+    while(j<nums.length){
+        // 假定新的滑动窗口中的最大值是滑动窗口的第一个数
+        max = nums[i];
+        // 求当前胡滑动窗口中的最大值
+        let p=i;
+        while(p<=j){
+            if(max<nums[p]){
+                max=nums[p];
+            }
+            p++;
+        }
+        // 保存当前滑动窗口中的最大值
+        maxArr.push(max);
+        // 去到下一个滑动窗口
+        i++;
+        j++; 
+    }
+    return maxArr;
+};
+```
+
+单调栈解法：O(n)
+
+单调栈实际就是栈，只不过利用了一些巧妙的逻辑，使得每次新元素入栈后，占你元素都保持有序。
+
+在单次滑动窗口中获取最大值是O(1)的时间复杂度，单调队列就是递增或者递减，每次获取直接取得队头元素或者队尾元素即可
+
+```
+var maxSlidingWindow = function(nums, k) {
+    let res = [];
+    // 存放nums数组元素的下标，最左边下标对应的nums的值最大，dq对应的nums的元素是单调递减的
+    let dq = []; 
+ 
+    for (let i = 0; i < nums.length; i++) {
+        // 当滑动窗口内的元素数量超出了k时，则删除最左侧的元素
+        // 滑动窗口最右侧索引为i,则最左侧的索引最小应该为i-k+1,如果小于i-k+1,则说明滑动窗口的长度大于k了
+        if (dq.length && dq[0] < i-k+1) {
+            dq.shift();
+        }
+        // 维持单调递减
+        // 新加入的元素比dq(从右往左，队尾)元素的对应的nums值大，则删除dq的元素
+        while(dq.length && nums[dq[dq.length - 1]] < nums[i]) {
+            dq.pop();
+        }
+
+        // 加入新元素的下标，保证dq中的索引对应的元素是递减排序的
+        dq.push(i);
+
+        // 判断是否等于或超过第一个窗口，是的话加入最大元素nums[dq[0]]
+        // 当滑动窗口内的元素数量真好满足要求时，就将队头元素入栈
+        if (i >= k - 1) {
+            res.push(nums[dq[0]]);
+        }
+    }
+
+    return res;
+};
+
+```
 
 #### [剑指 Offer 59 - II. 队列的最大值](https://leetcode-cn.com/problems/dui-lie-de-zui-da-zhi-lcof/)
 
@@ -692,6 +837,7 @@ MaxQueue.prototype.max_value = function() {
  */
 MaxQueue.prototype.push_back = function(value) {
     // 去除比当前值小的最大值，保证队头元素是当前queue中最大的元素
+    // 保证最大值队列是一个单调递减队列
     while(value>this.maxQueue[this.maxQueue.length-1]){
         this.maxQueue.pop();
     }
@@ -714,6 +860,8 @@ MaxQueue.prototype.pop_front = function() {
     return temp;
 };
 ```
+
+<img src='./img/04.png' height="400px" width='400px' />
 
 ## 9 map
 
@@ -834,3 +982,57 @@ var constructArr = function(a) {
 };
 ```
 
+## 11 字符串
+
+#### [剑指 Offer 67. 把字符串转换成整数](https://leetcode-cn.com/problems/ba-zi-fu-chuan-zhuan-huan-cheng-zheng-shu-lcof/)
+
+``` 
+"    123  123 abc"   ->123
+"-1234  12 bac   "   ->-1234
+"+123avs"            ->123
+"-000123"            ->0
+
+根据需要丢弃无用的开头空格字符，直到寻找到第一个非空格的字符为止。
+当我们寻找到的第一个非空字符为正或者负号时，则将该符号与之后面尽可能多的连续数字组合起来，作为该整数的正负号；假如第一个非空字符是数字，则直接将其与之后连续的数字字符组合起来，形成整数。
+```
+
+代码：
+
+```
+var strToInt = function(str) {
+    // 1. 过滤掉前后的空格
+    str = str.replace(/^\s+/g,'');
+    str = str.replace(/(\s+)$/g,'');
+    let min = -1*(2**31);
+    let max = 2**31-1;
+    let num;
+    // 2.去除头部的0
+    let i=0,flag=0,flag2=1;
+    while(str[i]===0){
+        i++;
+    }
+    if(str[i]>="0" && str[i]<="9"){
+        flag = i;
+        while(str[i]>="0" && str[i]<="9"){
+            i++;
+        }
+        num = Number(str.slice(flag,i));
+    }else if(str[i]==='-' || str[i]==='+'){
+        flag2 = str[i]==="-" ? -1 : 1;
+        i++;
+        // 去除头部的
+        while(str[i]===0){
+            i++;
+        }
+        flag = i;
+        while(str[i]>="0" && str[i]<="9"){
+            i++;
+        }
+        num =  i>flag ? flag2*Number(str.slice(flag,i)) : 0;
+        // console.log(num)
+    }else{
+        num = 0;
+    }
+    return num>max ? max : num<min ? min : num;
+}
+```
