@@ -318,6 +318,48 @@ var maxProfit = function(prices) {
 };
 ```
 
+#### [279. 完全平方数](https://leetcode-cn.com/problems/perfect-squares/)
+
+难度中等
+
+给定正整数 *n*，找到若干个完全平方数（比如 `1, 4, 9, 16, ...`）使得它们的和等于 *n*。你需要让组成和的完全平方数的个数最少。
+
+给你一个整数 `n` ，返回和为 `n` 的完全平方数的 **最少数量** 。
+
+**完全平方数** 是一个整数，其值等于另一个整数的平方；换句话说，其值等于一个整数自乘的积。例如，`1`、`4`、`9` 和 `16` 都是完全平方数，而 `3` 和 `11` 不是。
+
+**示例 1：**
+
+```
+输入：n = 12
+输出：3 
+解释：12 = 4 + 4 + 4
+```
+
+**示例 2：**
+
+```
+输入：n = 13
+输出：2
+解释：13 = 4 + 9
+```
+
+```
+var numSquares = function(n) {
+    // dp[i]表示和为 i 的完全平方数的 最少数量
+    let dp = Array(n+1).fill(0);
+    for(let i=0;i<dp.length;i++){
+        dp[i] = i;
+        // j*j<=i
+        for(let j=1;j*j<=i;j++){
+            // 将i分解为 j*j  i-j*j
+            dp[i] = Math.min(dp[i],dp[i-j*j]+1);
+        }
+    }
+    return dp[n];
+};
+```
+
 ## 3 dfs
 
 DFS使用栈结构，后进先出。深度优先搜索旨在不管有多少条岔路，先一条路走到底，不成功就返回上一个路口然后就选择下一条岔路
@@ -345,6 +387,240 @@ var translateNum = function (num) {
     }
   };
   return dfs(0);
+};
+```
+
+#### [130. 被围绕的区域](https://leetcode-cn.com/problems/surrounded-regions/)
+
+难度中等552
+
+给你一个 `m x n` 的矩阵 `board` ，由若干字符 `'X'` 和 `'O'` ，找到所有被 `'X'` 围绕的区域，并将这些区域里所有的 `'O'` 用 `'X'` 填充。
+
+ **示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/xogrid.jpg)
+
+想法：从每一个是O的边界元素出发，找到与该元素连接的所有同为O的元素，将其修改为#。遍历最终的board,将所有#还原为O,将所有O变为X
+
+dfs:
+
+1. 从某一个值为O的边界元素出发，将其修改为#
+2. 找到与该边界元素相邻的值为O的第一个元素，将其修改为#，重复执行2，直至指针越界或者找到的值为#或者X
+3. 找到与该边界元素相邻的值为O的第二个元素，....
+
+总之：dfs就是一条道走到黑，再换下一条道
+
+```
+var solve = function(board){
+    // 将从某个元素开始的所有相连的O元素修改为#
+    var dfs = function(board,  i,  j) {
+        if (i < 0 || j < 0 || i >= board.length  || j >= board[0].length || board[i][j] == 'X' || board[i][j] == '#') {
+            // board[i][j] == '#' 说明已经搜索过了. 
+            return;
+        }
+        board[i][j] = '#';
+        dfs(board, i - 1, j); // 上
+        dfs(board, i + 1, j); // 下
+        dfs(board, i, j - 1); // 左
+        dfs(board, i, j + 1); // 右
+        return board;
+    }
+
+    if (board == null || board.length == 0) return;
+    var m = board.length;
+    var n = board[0].length;
+    for (var i = 0; i < m; i++) {
+        for (var j = 0; j < n; j++) {
+            // 从边缘o开始搜索,将与之相连的所有O变成#
+            let  isEdge = i == 0 || j == 0 || i == m - 1 || j == n - 1;
+            if (isEdge && board[i][j] == 'O') {
+                dfs(board, i, j);
+            }
+        }
+    }
+    // 将修改后的board中的所有的#变成O,所有的O变成X
+    for (var i = 0; i < m; i++) {
+        for (var j = 0; j < n; j++) {
+            if (board[i][j] == 'O') {
+                board[i][j] = 'X';
+            }
+            if (board[i][j] == '#') {
+                board[i][j] = 'O';
+            }
+        }
+    } 
+};
+```
+
+bfs: 
+
+1. 从某一个值为O的边界元素出发，将其修改为#
+2. 记录该元素相邻(上下左右)的所有为O的元素，将对应的索引放入queue，并将其值修改为#
+3. 从queue中依次取出所有的值为O的元素，重复2
+
+总之：bfs就是一层一层处理
+
+```
+var solve = function(board){
+    // 将从某个元素开始的所有相连的O元素修改为#
+    var bfs = function(board,  i,  j) {
+        let queue = [];
+        board[i][j] = '#';
+        queue.push([i,j]);
+        while(queue.length>0){
+            let cur = queue.shift();
+            let i = cur[0], j=cur[1];
+            // console.log(i,j)
+            if(i-1>=0 && board[i-1][j]==='O'){
+                queue.push([i-1,j]);
+                board[i - 1][j] = '#';
+            }
+            if(i+1<=board.length-1 && board[i+1][j]==='O'){
+                queue.push([i+1,j]);
+                board[i + 1][j] = '#';
+            }
+            if(j-1>=0 && board[i][j-1]==='O'){
+                queue.push([i,j-1]);
+                board[i][j-1] = '#';
+            }
+            
+            if(j+1<=board[0].length-1 && board[i][j+1]==='O'){
+                queue.push([i,j+1]);
+                board[i][j+1] = '#';
+            }
+        }
+    }
+
+    if (board == null || board.length == 0) return;
+    var m = board.length;
+    var n = board[0].length;
+    for (var i = 0; i < m; i++) {
+        for (var j = 0; j < n; j++) {
+            // 从边缘o开始搜索,将与之相连的所有O变成#
+            let  isEdge = i == 0 || j == 0 || i == m - 1 || j == n - 1;
+            if (isEdge && board[i][j] == 'O') {
+                bfs(board, i, j);
+            }
+        }
+    }
+    // 将修改后的board中的所有的#变成O,所有的O变成X
+    for (var i = 0; i < m; i++) {
+        for (var j = 0; j < n; j++) {
+            if (board[i][j] == 'O') {
+                board[i][j] = 'X';
+            }
+            if (board[i][j] == '#') {
+                board[i][j] = 'O';
+            }
+        }
+    } 
+};
+```
+
+#### [200. 岛屿数量](https://leetcode-cn.com/problems/number-of-islands/)
+
+难度中等
+
+给你一个由 `'1'`（陆地）和 `'0'`（水）组成的的二维网格，请你计算网格中岛屿的数量。
+
+岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。
+
+此外，你可以假设该网格的四条边均被水包围。
+
+**示例 1：**
+
+```
+输入：grid = [
+  ["1","1","1","1","0"],
+  ["1","1","0","1","0"],
+  ["1","1","0","0","0"],
+  ["0","0","0","0","0"]
+]
+输出：1
+```
+
+**注意：如果grid中的元素不会影响下一个值，则可以直接修改当前元素，表示当前元素已经访问过了**
+
+dfs解法：
+
+```
+var numIslands = function(grid) {
+    // 将与某个元素1相连的所有1标记为2
+    var dfs = function(grid,  i,  j) {
+        if (i < 0 || j < 0 || i >= grid.length  || j >= grid[0].length || grid[i][j] == '0' || grid[i][j] == '2') {
+            // grid[i][j] == '2' 说明已经搜索过了. 
+            return;
+        }
+        grid[i][j] = "2";
+        dfs(grid, i - 1, j); // 上
+        dfs(grid, i + 1, j); // 下
+        dfs(grid, i, j - 1); // 左
+        dfs(grid, i, j + 1); // 右
+    }
+
+    if (grid == null || grid.length == 0) return 0;
+    var m = grid.length;
+    var n = grid[0].length;
+    // var visited = Array.from(Array(m),()=>Array(n).fill(false));
+    let index = 0;
+    for (var i = 0; i < m; i++) {
+        for (var j = 0; j < n; j++) {
+            // 从边缘o开始搜索,将与之相连的所有O变成#
+            if (grid[i][j] == '1') {
+                dfs(grid, i, j);
+                index++;
+            }
+        }
+    }
+    return index;
+};
+```
+
+bfs解法：
+
+```
+var numIslands = function(grid) {
+    var bfs = function(grid,  i,  j) {
+        let queue = [];
+        queue.push([i,j]);
+        grid[i][j] = 2;
+        while(queue.length>0){
+            let cur = queue.shift();
+            let i = cur[0], j=cur[1];
+            if(i-1>=0 && grid[i-1][j]==='1'){
+                queue.push([i-1,j]);
+                grid[i-1][j] = 2;
+            }
+            if(i+1<=grid.length-1 && grid[i+1][j]==='1'){
+                queue.push([i+1,j]);
+                grid[i+1][j] = 2;
+            }
+            if(j-1>=0 && grid[i][j-1]==='1'){
+                queue.push([i,j-1]);
+                grid[i][j-1] = 2;
+            }
+            
+            if(j+1<=grid[0].length-1 && grid[i][j+1]==='1'){
+                queue.push([i,j+1]);
+                grid[i][j+1] = 2;
+            }
+        }
+    }
+
+    if (grid == null || grid.length == 0) return 0;
+    var m = grid.length;
+    var n = grid[0].length;
+    let index = 0;
+    for (var i = 0; i < m; i++) {
+        for (var j = 0; j < n; j++) {
+            // 从边缘o开始搜索,将与之相连的所有O变成#
+            if (grid[i][j] == '1') {
+                bfs(grid, i, j);
+                index++;
+            }
+        }
+    }
+    return index;
 };
 ```
 
@@ -398,7 +674,7 @@ while queue 不空{
 ```
 function levelOrder(root){
 	if(root === null){ return []; }
-    let queue = [];
+    let queue = [root];
     let res = [];   // 存放最终的结果
     let level = 0;   // 存放二叉树的高度
     while(queue.length){	
@@ -407,8 +683,8 @@ function levelOrder(root){
         for(let i=0;i<len;i++){
             let cur = queue.shift();
             res1.push(cur);
-            if(res.left!==null){ queue.push(res.left); }
-            if(res.right!==null){ queue.push(res.right); }
+            if(cur.left!==null){ queue.push(cur.left); }
+            if(cur.right!==null){ queue.push(cur.right); }
         }
         res.push(res1);
         level++;
@@ -416,6 +692,46 @@ function levelOrder(root){
     return res;
 }
 ```
+
+#### [103. 二叉树的锯齿形层序遍历](https://leetcode-cn.com/problems/binary-tree-zigzag-level-order-traversal/)
+
+难度中等453
+
+给定一个二叉树，返回其节点值的锯齿形层序遍历。（即先从左往右，再从右往左进行下一层遍历，以此类推，层与层之间交替进行）。
+
+```
+var zigzagLevelOrder = function(root) {
+    if(root===null){return [];}
+    var queue = [root]; //保存每一层的节点
+    var res = [];
+    let index = 0;
+    while(queue.length){
+        index++;
+        var arr = [];
+        let len = queue.length;
+        while(len){
+            let node = queue.shift();
+            arr.push(node.val);
+            if(node.left !== null){
+                queue.push(node.left);
+            }
+            if(node.right !== null){
+                queue.push(node.right);
+            }
+            
+            len--;
+        }
+        // 偶数层遍历结果取反
+        if(index%2===0){
+            arr.reverse();
+        }
+        res.push(arr);
+    }
+    return res;
+};
+```
+
+
 
 #### [111. 二叉树的最小深度](https://leetcode-cn.com/problems/minimum-depth-of-binary-tree/)
 
@@ -650,6 +966,61 @@ let openLock = function(deadends, target){
 ]
 
 ```
+
+#### [207. 课程表](https://leetcode-cn.com/problems/course-schedule/)
+
+难度中等
+
+你这个学期必须**选修 `numCourses` 门课程，记为 `0` 到 `numCourses - 1` **。
+
+在选修某些课程之前需要一些先修课程。 先修课程按数组 `prerequisites` 给出，其中 `prerequisites[i] = [ai, bi]` ，表示如果要学习课程 `ai` 则 **必须** 先学习课程 `bi` 。
+
+- 例如，先修课程对 `[0, 1]` 表示：想要学习课程 `0` ，你需要先完成课程 `1` 。
+
+请你判断是否可能完成所有课程的学习？如果可以，返回 `true` ；否则，返回 `false` 。
+
+```
+const canFinish = (numCourses, prerequisites) => {
+  const inDegree = new Array(numCourses).fill(0); // 入度数组
+  const map = {};            // 邻接表
+  // 求每门课的初始入度值                           
+  for (let i = 0; i < prerequisites.length; i++) {
+      // prerequisites的第一列的元素肯定都有一个入度，就是第二列产生的
+    inDegree[prerequisites[i][0]]++;              
+    if (map[prerequisites[i][1]]) {               // 当前课已经存在于邻接表
+      map[prerequisites[i][1]].push(prerequisites[i][0]); // 添加依赖它的后续课
+    } else {               
+      // 当前课不存在于邻接表，则将后续的依赖课程prerequisites[i][0]放入依赖中                       
+      map[prerequisites[i][1]] = [prerequisites[i][0]];
+    }
+  }
+//   console.log(map,inDegree)
+// { '0': [ 3 ], '1': [ 3, 4 ], '2': [ 4 ], '3': [ 5 ], '4': [ 5 ] } 
+// [ 0, 0, 0, 2, 2, 2 ]
+  const queue = [];   // [0 1 2]
+  for (let i = 0; i < inDegree.length; i++) { // 所有入度为0的课入列
+    if (inDegree[i] == 0) queue.push(i);
+  }
+  let count = 0;
+  while (queue.length) {
+    const selected = queue.shift();           // 当前选的课，出列
+    count++;                                  // 选课数+1
+    const toEnQueue = map[selected];          // 获取这门课对应的后续课
+    if (toEnQueue && toEnQueue.length) {      // 确实有后续课
+      // // 依次取出依赖当前课程的课程，将它们的入度减1
+      for (let i = 0; i < toEnQueue.length; i++) {
+        inDegree[toEnQueue[i]]--;             // 依赖它的后续课的入度-1
+        if (inDegree[toEnQueue[i]] == 0) {    // 如果因此减为0，入列
+          queue.push(toEnQueue[i]);
+        }
+      }
+    }
+  }
+  return count == numCourses; // 选了的课等于总课数，true，否则false
+};
+```
+
+![](./img/05.png)
 
 ## 4 双指针
 
