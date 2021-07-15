@@ -1180,6 +1180,37 @@ var lowestCommonAncestor = function(root, p, q) {
 };
 ```
 
+#### [剑指 Offer 36. 二叉搜索树与双向链表](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/)
+
+1. 排序链表： 节点应从小到大排序，因此应使用 中序遍历 “从小到大”访问树的节点。
+2. 双向链表： 在构建相邻节点的引用关系时，设前驱节点 pre 和当前节点 cur ，不仅应构建 pre.right = cur ，也应构建 cur.left = pre 。
+3. 循环链表： 设链表头节点 head 和尾节点 tail ，则应构建 head.left = tail 和 tail.right = head 。
+
+链接：https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/solution/mian-shi-ti-36-er-cha-sou-suo-shu-yu-shuang-xian-5/
+
+```
+var treeToDoubleList = function(root){
+	if(root===null){return null;}
+	let pre=null,head=null;
+	dfs(root);
+	// 连接收尾节点
+	pre.right = head;
+	head.left = pre;
+	var dfs = function(root){
+		if(root===null){return;}
+		dfs(root.left);
+		if(pre===null){
+			head = root;
+		}else{
+			pre.right = root;
+		}
+		root.left = pre;
+		pre = root;
+		dfs(root.right);
+	}
+}
+```
+
 ## 6 位运算
 
 这里涉及到js中的位运算符，位运算符只对整数起作用。js中所有数都是以64位浮点数的形式存储，但是做位运算时，会先将数值转化为32位带符号的整数，位运算的结果也是一个32位带符号的整数。
@@ -1710,3 +1741,317 @@ var strToInt = function(str) {
     return num>max ? max : num<min ? min : num;
 }
 ```
+
+## 排序算法：
+
+一亿个数找到最大的其中1000个数：**要求效率高并且空间占用低**
+
+思路1：使用快速排序将所有数的顺序排列好，再取出前1000个数。快速排序的思路是每次选取一个index,排序一次使得大于该索引处的元素均大于该元素，小于index索引的元素均小于该元素。所以如果是找第k个最大的元素，则直接判断index等于k-1时说明找到了第k个最大的元素。快速排序的时间复杂度O(nlogn),就是10^8log2 10^8,快速排序空间复杂度为O(1)
+
+思路2：使用堆排序，最大堆，每次都找到最大的元素，首先将数据集合构造成堆（自下向上构造堆的时间复杂度为o(n)），将最大值first与末尾数last交换位置，然后再对[first, last - 1]重建堆999次（自顶向下重建堆的时间复杂度为o(2log2n)），所以总的时间复杂度为n + 999 × log2n = (10^ 8) + 2 × 999 × 27，约等于10^ 8，空间复杂度为o(1)，效率高且占用内存少
+
+[最大堆排序](https://zhuanlan.zhihu.com/p/124885051)
+
+在堆中，索引为i的元素对应的左子节点的索引为2*i+1,右子节点为2*i+2,父结点下标为(i-1)/2
+
+长度为len的堆的第一个非叶子节点的索引为 [i/2]-1
+
+```
+var len;
+
+// 创建最大堆
+function buildMaxHeap(arr) {
+  //建堆
+  len = arr.length;
+  // [n/2-1]表示的是最后一个非叶子节点 (本来是n/2（堆从1数起），但是这里arr索引是从0开始，所以-1)
+  let index = Math.floor(len / 2) - 1;
+  // 遍历每一个非叶子节点，构建最大堆
+  for (var i = index; i >= 0; i--) {
+    maxHeapify(arr, i);
+  }
+}
+
+// 调整以nums[i]为根节点的堆为最大堆
+function maxHeapify(arr, i) {
+  //堆调整
+  var left = 2 * i + 1,
+    right = 2 * i + 2,
+    largest = i; //i为该子树的根节点
+
+  if (left < len && arr[left] > arr[largest]) {
+    largest = left;
+  }
+
+  if (right < len && arr[right] > arr[largest]) {
+    largest = right;
+  }
+
+  if (largest != i) {
+    //即上面的if中有一个生效了
+    swap(arr, i, largest); //交换三者中的较大者作为父节点
+    maxHeapify(arr, largest); //交换后，原值arr[i]（往下降了）（索引保存为largest），
+    //arr[i]作为根时，子节点可能比它大，因此要继续调整
+  }
+}
+
+// 交换元素
+function swap(arr, i, j) {
+  var temp = arr[i];
+  arr[i] = arr[j];
+  arr[j] = temp;
+}
+
+// 最大堆排序
+function heapSort(arr) {
+  // 第一步：先创建一个最大堆
+  buildMaxHeap(arr);
+  //   从最后一个非叶子节点开始，将最大值交换当前堆中到最后一个元素处，然后将除了该最大值之外的堆重新构建为最大堆
+  for (var i = arr.length - 1; i > 0; i--) {
+    swap(arr, 0, i);
+    len--;
+    maxHeapify(arr, 0);
+  }
+  return arr;
+}
+
+console.log(heapSort([3, 1, 5, 2, 7, 0, 10], 4));
+
+```
+
+本题中直接当len=一亿-1000时，表明前100个最大元素已经找到了，所以直接输出arr.slice(一亿-1000)即可
+
+各个算法的时间复杂度比较：
+
+#### [剑指 Offer 31. 栈的压入、弹出序列](https://leetcode-cn.com/problems/zhan-de-ya-ru-dan-chu-xu-lie-lcof/)
+
+输入两个整数序列，第一个序列表示栈的压入顺序，请判断第二个序列是否为该栈的弹出顺序。假设压入栈的所有数字均不相等。例如，序列 {1,2,3,4,5} 是某栈的压栈序列，序列 {4,5,3,2,1} 是该压栈序列对应的一个弹出序列，但 {4,3,5,1,2} 就不可能是该压栈序列的弹出序列。
+
+示例 1：
+
+输入：pushed = [1,2,3,4,5], popped = [4,5,3,2,1]
+输出：true
+解释：我们可以按以下顺序执行：
+push(1), push(2), push(3), push(4), pop() -> 4,
+push(5), pop() -> 5, pop() -> 3, pop() -> 2, pop() -> 1
+
+使用一个备用栈，模拟元素的入栈和出栈，从pushed数组开始，将元素依次入栈。如果某个元素是poppped中的第一个元素，则表示该元素出栈了，则将该元素出栈
+
+```
+var validateStackSequences = function(pushed, popped) {
+    let stack = [],m=0;
+    for(let i=0;i<pushed.length;i++){
+        stack.push(pushed[i]);
+        while(stack.length>0 && stack[stack.length-1]===popped[m]){
+            stack.pop();
+            m = m+1;
+        }
+    }
+    return stack.length===0;
+};
+```
+
+#### [剑指 Offer 20. 表示数值的字符串](https://leetcode-cn.com/problems/biao-shi-shu-zhi-de-zi-fu-chuan-lcof/)
+
+判断一个字符串中的元素是否是纯数字
+
+```
+function isOnlyNum(s){
+	for(let c of s){
+		if(c<"0" && c>'9'){ return false; }
+	}
+	return true;
+}
+```
+
+判断一个字符串中的元素是否是合法的小数      .12    12.    12.12
+
+```
+function isLegalDecimal(s){
+	if(s.indexOf('.')!==-1 && s.length>1){
+		if(s.indexOf(".") ！== s.lastIndexOf(".")){return false;}
+		if(s.charAt(0) === '.') { return isOnlyNum(s.substring(1)); }  // .12
+		if(s.charAt(s.length-1) === '.') { return isOnlyNum(s.substring(1)); }  // 12.
+		let index = s.indexOf(".");
+		return s.length>2 && isOnlyNum(s.substring(0,index)) && isOnlyNum(s.substring(index+1));
+	}
+	return false;
+}
+```
+
+判断是否是整数
+
+```
+function checkNum( s) {    //判断是否是整数
+    if(s == null || s.length == 0) return false;
+    if(s.charAt(0) == '-' || s.charAt(0) == '+') return s.length > 1 ? isOnlyNum(s.substring(1)) : false;
+    return isOnlyNum(s);
+}
+```
+
+判断是否是整数或者是小数
+
+```
+function checkNumOrSnum( s) {  //判断是否整数或者小数
+    if(s == null || s.length == 0) return false;  // s为空
+    if(checkNum(s)) return true;   // s是整数
+    // s是带符号小数组成的字符串
+    if(s.charAt(0) == '-' || s.charAt(0) == '+'){    
+        return s.length > 1 ? isNumandPolet(s.substring(1)) : false;
+    }
+    // s是无符号小数  字符串
+    return isNumandPolet(s);
+}
+```
+
+请实现一个函数用来判断字符串是否表示**数值**（包括整数和小数）。
+
+```
+const isNumber = function( s) {
+    // 先去除空格
+    s = s.trim();
+    /** 通过判断有没有e，有e则前面为整数或者小数，后面为整数。没有e则为整数或者小数*/
+    // 有e并且只有一个e
+    if(s.indexOf("e")!==-1 && s.indexOf("e") == s.lastIndexOf("e")) {
+        let ss = s.split("e");   // 按照e将字符串分段
+        // 如果分段的长度小于等于1，则说明不是有效数值   1e e1 e
+        // 如果分段长度，
+        return ss.length > 1 ? checkNumOrSnum(ss[0]) && checkNum(ss[1]) : false;
+    }
+    // 有E并且只有一个E
+    if(s.indexOf("E")!==-1 && s.indexOf("E") == s.lastIndexOf("E")) {
+        let ss = s.split("E");
+        return ss.length > 1 ? checkNumOrSnum(ss[0]) && checkNum(ss[1]) : false;
+    }
+    // 没有e或者E  或者有多个e
+    return checkNumOrSnum(s);
+}
+```
+
+#### [剑指 Offer 51. 数组中的逆序对](https://leetcode-cn.com/problems/shu-zu-zhong-de-ni-xu-dui-lcof/)
+
+在数组中的两个数字，如果前面一个数字大于后面的数字，则这两个数字组成一个逆序对。输入一个数组，求出这个数组中的逆序对的总数。
+
+示例 1:
+
+输入: [7,5,6,4]
+输出: 5
+
+归并排序解法：
+
+```
+var reversePairs = function(nums) {
+    // 归并排序
+    let res = 0;
+    function mergeSort(nums){
+        if(nums.length<=1){
+            return nums;
+        }
+        let len = Math.floor(nums.length/2);
+        return merge(mergeSort(nums.slice(0,len)),mergeSort(nums.slice(len)));
+    }
+    function merge(left, right) {
+        let result = [];
+        let leftLen = left.length;
+        let rightLen = right.length;
+        let len = leftLen + rightLen;
+        for(let index = 0, i = 0, j = 0; index < len; index ++) {
+            if(i >= leftLen) result[index] = right[j ++];
+            else if (j >= rightLen) result[index] = left[i ++];
+            else if (left[i] <= right[j]) result[index] = left[i ++];
+            else {
+                result[index] = right[j ++];
+                res += leftLen - i;//在归并排序中唯一加的一行代码
+            }
+        }
+        return result;
+    }
+    mergeSort(nums);
+    return res;
+}
+```
+
+插入排序解法：
+
+```
+var reversePairs = function(nums) {
+    // 插入排序，记录交换次数
+    let res = 0;
+    for(let i=1;i<nums.length;i++){
+        let key = nums[i];
+        let j = i-1;
+        while(j>=0 && nums[j]>key){
+            nums[j+1] = nums[j]
+            j--;
+            res++;
+        }
+        nums[j+1] = key;
+    }
+    return res;
+}
+```
+
+暴力解法会超时：
+
+```
+var reversePairs = function(nums) {
+// 暴力解法，会超时
+    let res=0;
+    for(let i=0;i<nums.length-1;i++){
+        for(let j=i+1;j<nums.length;j++){
+            if(nums[i]>nums[j]){res++;}
+        }
+    }
+    return res;
+};
+```
+
+#### [5. 最长回文子串](https://leetcode-cn.com/problems/longest-palindromic-substring/)
+
+难度中等
+
+给你一个字符串 `s`，找到 `s` 中最长的回文子串。
+
+**中心扩散法**
+
+```
+var longestPalindrome = function(s) {
+  // s为空字符串或为长为1的字符串，返回字符串本身
+  if (s.length < 2) return s;
+
+  let res = '';
+  // 遍历每个可能的中心点位，以左右指针模拟中心点
+  for (let i = 0; i < s.length; i++) {
+    // 单数情况
+    getCenter(i, i);
+    // 双数情况
+    getCenter(i, i + 1);
+  }
+
+  // 本函数的作用为：获取最长的，以本中心点为中心的回文串
+  function getCenter(left, right) {
+    // 边界条件：左指针不小于0，右指针不超过数组的最长长度。
+    // 进入循环条件：满足边界条件，且当前两个指针指向的字符相等
+    while (left >= 0 && right < s.length && s[left] == s[right]) {
+      // 左侧指针左移，右侧指针右移，开启下次字符相等的判断循环。当超出系统边界或两指针指向的字符不相等，则退出
+      left--;
+      right++;
+    }
+
+    // 循环结束，两指针目前指向的字符串中间其实是不满足回文串
+    // 事实上本次while获得的回文串的左侧为left + 1，右侧为right - 1
+    // 所以本次获得的回文串长度为 (right - 1) - (left + 1) + 1 = right - left - 1，与res长度判断后取最长的回文子串
+    if (right - left - 1 > res.length) {
+      // 记住这里需要截取的是正确的回文子串，所以要消除while循环中，最后一次不满足条件的left、right的影响
+      /**
+       * left => left + 1
+       * right - 1 => right - 1 + 1 = right
+       **/
+      res = s.slice(left + 1, right);
+    }
+  }
+  return res
+};
+```
+
+或者暴力解法：双重循环，判断每一段中是否是回文字符串
+
