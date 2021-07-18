@@ -1,4 +1,4 @@
-## 数量级与时间复杂度
+数量级与时间复杂度
 
 ![](./img/01.png)
 
@@ -200,36 +200,37 @@ var nthUglyNumber = function(n) {
 
 1个骰子，得到的结果：1~6
 
-2个骰子，得到的结果：2~12     n~n*6
+2个骰子，得到的结果：2-12     n-n*6
 
+````
 `dp[i][j]`表示i个骰子得到和为j的概率，则可以推出：
 
-`dp[3][3] = dp[1][1]*dp[2][2] + dp[1][2]*dp[2][1] + dp[1][3]*dp[2][0];`
+dp[3][3] = dp[1][1]*dp[2][2] + dp[1][2]*dp[2][1] + dp[1][3]*dp[2][0];
+````
 
 ```
  var dicesProbability = function(n) {
     let dp = Array.from(Array(n+1),()=>Array(6*n+1).fill(0));
-    // 初始化，一个骰子掷出1~6的概率均为1/6，2个及以上骰子掷出0或者1的概率为0
     for(let i=1;i<7;i++){
         dp[1][i] = 1/6.0;
-    }    
-    // 从 至少两个骰子掷出2开始
+    }
+
     for(let i=2;i<n+1;i++){
         // i个骰子
         for(let j=i;j<6*i+1;j++){
             // 骰出几 
             for(let k=1;k<7;k++){
-                if(i-k>=0 && j-k>=0){
+                if(j-k>=1){  
                     // i个骰子和为j  1个骰子为k  i-1个骰子和为j-k
                     dp[i][j] += dp[1][k]*dp[i-1][j-k];
                 }
             }
         }
     }
-    // 记录所有结果的值
+    // n个骰子的结果为[n,6*n],总共5*n+1个数
     let result = Array(5*n+1).fill(0);
     let index = 0;
-    // n个骰子得到的结果范围： n~6*n
+    // n个骰子结果至少为n,最大是6*n
     for(let i=n;i<6*n+1;i++){
         result[index++] = dp[n][i];
     }
@@ -659,6 +660,7 @@ while queue 不空{
 二叉树：[3,9,20,null,null,15,7],
 
     3
+
    / \
   9  20
     /  \
@@ -672,25 +674,7 @@ while queue 不空{
 ]
 
 ```
-function levelOrder(root){
-	if(root === null){ return []; }
-    let queue = [root];
-    let res = [];   // 存放最终的结果
-    let level = 0;   // 存放二叉树的高度
-    while(queue.length){	
-        let len = queue.length;
-        let res1 = [];  // 存放每一层的遍历结果
-        for(let i=0;i<len;i++){
-            let cur = queue.shift();
-            res1.push(cur);
-            if(cur.left!==null){ queue.push(cur.left); }
-            if(cur.right!==null){ queue.push(cur.right); }
-        }
-        res.push(res1);
-        level++;
-    }
-    return res;
-}
+function levelOrder(root){	if(root === null){ return []; }    let queue = [root];    let res = [];   // 存放最终的结果    let level = 0;   // 存放二叉树的高度    while(queue.length){	        let len = queue.length;        let res1 = [];  // 存放每一层的遍历结果        for(let i=0;i<len;i++){            let cur = queue.shift();            res1.push(cur);            if(cur.left!==null){ queue.push(cur.left); }            if(cur.right!==null){ queue.push(cur.right); }        }        res.push(res1);        level++;    }    return res;}
 ```
 
 #### [103. 二叉树的锯齿形层序遍历](https://leetcode-cn.com/problems/binary-tree-zigzag-level-order-traversal/)
@@ -700,35 +684,7 @@ function levelOrder(root){
 给定一个二叉树，返回其节点值的锯齿形层序遍历。（即先从左往右，再从右往左进行下一层遍历，以此类推，层与层之间交替进行）。
 
 ```
-var zigzagLevelOrder = function(root) {
-    if(root===null){return [];}
-    var queue = [root]; //保存每一层的节点
-    var res = [];
-    let index = 0;
-    while(queue.length){
-        index++;
-        var arr = [];
-        let len = queue.length;
-        while(len){
-            let node = queue.shift();
-            arr.push(node.val);
-            if(node.left !== null){
-                queue.push(node.left);
-            }
-            if(node.right !== null){
-                queue.push(node.right);
-            }
-            
-            len--;
-        }
-        // 偶数层遍历结果取反
-        if(index%2===0){
-            arr.reverse();
-        }
-        res.push(arr);
-    }
-    return res;
-};
+var zigzagLevelOrder = function(root) {    if(root===null){return [];}    var queue = [root]; //保存每一层的节点    var res = [];    let index = 0;    while(queue.length){        index++;        var arr = [];        let len = queue.length;        while(len){            let node = queue.shift();            arr.push(node.val);            if(node.left !== null){                queue.push(node.left);            }            if(node.right !== null){                queue.push(node.right);            }                        len--;        }        // 偶数层遍历结果取反        if(index%2===0){            arr.reverse();        }        res.push(arr);    }    return res;};
 ```
 
 
@@ -980,44 +936,7 @@ let openLock = function(deadends, target){
 请你判断是否可能完成所有课程的学习？如果可以，返回 `true` ；否则，返回 `false` 。
 
 ```
-const canFinish = (numCourses, prerequisites) => {
-  const inDegree = new Array(numCourses).fill(0); // 入度数组
-  const map = {};            // 邻接表
-  // 求每门课的初始入度值                           
-  for (let i = 0; i < prerequisites.length; i++) {
-      // prerequisites的第一列的元素肯定都有一个入度，就是第二列产生的
-    inDegree[prerequisites[i][0]]++;              
-    if (map[prerequisites[i][1]]) {               // 当前课已经存在于邻接表
-      map[prerequisites[i][1]].push(prerequisites[i][0]); // 添加依赖它的后续课
-    } else {               
-      // 当前课不存在于邻接表，则将后续的依赖课程prerequisites[i][0]放入依赖中                       
-      map[prerequisites[i][1]] = [prerequisites[i][0]];
-    }
-  }
-//   console.log(map,inDegree)
-// { '0': [ 3 ], '1': [ 3, 4 ], '2': [ 4 ], '3': [ 5 ], '4': [ 5 ] } 
-// [ 0, 0, 0, 2, 2, 2 ]
-  const queue = [];   // [0 1 2]
-  for (let i = 0; i < inDegree.length; i++) { // 所有入度为0的课入列
-    if (inDegree[i] == 0) queue.push(i);
-  }
-  let count = 0;
-  while (queue.length) {
-    const selected = queue.shift();           // 当前选的课，出列
-    count++;                                  // 选课数+1
-    const toEnQueue = map[selected];          // 获取这门课对应的后续课
-    if (toEnQueue && toEnQueue.length) {      // 确实有后续课
-      // // 依次取出依赖当前课程的课程，将它们的入度减1
-      for (let i = 0; i < toEnQueue.length; i++) {
-        inDegree[toEnQueue[i]]--;             // 依赖它的后续课的入度-1
-        if (inDegree[toEnQueue[i]] == 0) {    // 如果因此减为0，入列
-          queue.push(toEnQueue[i]);
-        }
-      }
-    }
-  }
-  return count == numCourses; // 选了的课等于总课数，true，否则false
-};
+const canFinish = (numCourses, prerequisites) => {  const inDegree = new Array(numCourses).fill(0); // 入度数组  const map = {};            // 邻接表  // 求每门课的初始入度值                             for (let i = 0; i < prerequisites.length; i++) {      // prerequisites的第一列的元素肯定都有一个入度，就是第二列产生的    inDegree[prerequisites[i][0]]++;                  if (map[prerequisites[i][1]]) {               // 当前课已经存在于邻接表      map[prerequisites[i][1]].push(prerequisites[i][0]); // 添加依赖它的后续课    } else {                     // 当前课不存在于邻接表，则将后续的依赖课程prerequisites[i][0]放入依赖中                             map[prerequisites[i][1]] = [prerequisites[i][0]];    }  }//   console.log(map,inDegree)// { '0': [ 3 ], '1': [ 3, 4 ], '2': [ 4 ], '3': [ 5 ], '4': [ 5 ] } // [ 0, 0, 0, 2, 2, 2 ]  const queue = [];   // [0 1 2]  for (let i = 0; i < inDegree.length; i++) { // 所有入度为0的课入列    if (inDegree[i] == 0) queue.push(i);  }  let count = 0;  while (queue.length) {    const selected = queue.shift();           // 当前选的课，出列    count++;                                  // 选课数+1    const toEnQueue = map[selected];          // 获取这门课对应的后续课    if (toEnQueue && toEnQueue.length) {      // 确实有后续课      // // 依次取出依赖当前课程的课程，将它们的入度减1      for (let i = 0; i < toEnQueue.length; i++) {        inDegree[toEnQueue[i]]--;             // 依赖它的后续课的入度-1        if (inDegree[toEnQueue[i]] == 0) {    // 如果因此减为0，入列          queue.push(toEnQueue[i]);        }      }    }  }  return count == numCourses; // 选了的课等于总课数，true，否则false};
 ```
 
 ![](./img/05.png)
@@ -1029,23 +948,7 @@ const canFinish = (numCourses, prerequisites) => {
 普通解法：
 
 ```
-var lengthOfLongestSubstring = function (s) {
-    var m = ''
-    var res = 0
-    for (var i = 0; i < s.length; i++) {
-    	// 如果m中不存在s[i]，则将s[i]放入m中
-        if (m.indexOf(s[i]) == -1) {
-            m += s[i]
-        } else {
-        	// 如果m中已经存在s[i],则先记录res的长度，然后重新计算m,去除原来的s[i]及其之前的元素，产生包含新的s[i]的m
-            res = res < m.length ? m.length : res  // 保存长度
-            m += s[i]
-            m = m.slice(m.indexOf(s[i]) + 1)
-        }
-    }
-    res = res < m.length ? m.length : res
-    return res || s.length
-};
+var lengthOfLongestSubstring = function (s) {    var m = ''    var res = 0    for (var i = 0; i < s.length; i++) {    	// 如果m中不存在s[i]，则将s[i]放入m中        if (m.indexOf(s[i]) == -1) {            m += s[i]        } else {        	// 如果m中已经存在s[i],则先记录res的长度，然后重新计算m,去除原来的s[i]及其之前的元素，产生包含新的s[i]的m            res = res < m.length ? m.length : res  // 保存长度            m += s[i]            m = m.slice(m.indexOf(s[i]) + 1)        }    }    res = res < m.length ? m.length : res    return res || s.length};
 ```
 
 双指针解法：
@@ -1160,24 +1063,7 @@ var lowestCommonAncestor = function(root, p, q) {
 [百度百科](https://baike.baidu.com/item/最近公共祖先/8918834?fr=aladdin)中最近公共祖先的定义为：“对于有根树 T 的两个结点 p、q，最近公共祖先表示为一个结点 x，满足 x 是 p、q 的祖先且 x 的深度尽可能大（**一个节点也可以是它自己的祖先**）。”
 
 ```
-当然直接用上面68二的方法也可以，但是考虑到是二叉搜索树，可以利用它的性质：
-var lowestCommonAncestor = function(root, p, q) {
-    // 先获取到两者之中的大和小
-    let max = p.val > q.val ? p : q;
-    let min = p.val > q.val ? q : p;
-    
-    let dfs = function(root,p,q){
-        if(root===null){return null;}
-        if(root.val<=max.val && root.val>=min.val){
-            return root;
-        }
-        if(root.val>max.val){
-            return dfs(root.left,p,q);
-        }
-        return dfs(root.right,p,q);
-    }
-    return dfs(root,min,max);
-};
+当然直接用上面68二的方法也可以，但是考虑到是二叉搜索树，可以利用它的性质：var lowestCommonAncestor = function(root, p, q) {    // 先获取到两者之中的大和小    let max = p.val > q.val ? p : q;    let min = p.val > q.val ? q : p;        let dfs = function(root,p,q){        if(root===null){return null;}        if(root.val<=max.val && root.val>=min.val){            return root;        }        if(root.val>max.val){            return dfs(root.left,p,q);        }        return dfs(root.right,p,q);    }    return dfs(root,min,max);};
 ```
 
 #### [剑指 Offer 36. 二叉搜索树与双向链表](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/)
@@ -1333,18 +1219,23 @@ var singleNumber = function(nums) {
 
 题解：[面试题65. 不用加减乘除做加法（位运算，清晰图解）](https://leetcode-cn.com/problems/bu-yong-jia-jian-cheng-chu-zuo-jia-fa-lcof/solution/mian-shi-ti-65-bu-yong-jia-jian-cheng-chu-zuo-ji-7/)
 
+对于每一位而言：
+
+1. 无进位和：a^b     
+2. 进位：(a&b)<<1     因为是进位所以需要左移一位，不是加给当前位的
+
  ```
- var add = function(a, b) {
-     while(b!==0){
-         // 进位
-         c = (a&b)<<1;
-         // 非进位和
-         a ^= b;
-         // 保存进位
-         b = c;
-     }
-     return a;
- };
+var add = function(a, b) {
+    while(b!==0){
+        // 进位
+        c = (a&b)<<1;
+        // 非进位和
+        a ^= b;
+        // 保存进位
+        b = c;
+    }
+    return a;
+};
  ```
 
 ![](./img/02.png)
@@ -1403,19 +1294,20 @@ var findContinuousSequence = function(target) {
 3. &&
    1. A && B  A的结果为true则执行B，结果就是B的结果
    2. A || B     A的结果为true,则直接返回true         A的结果为false,则返回B 的结果
+   3. 这道题的关键在于：使用递归代替for循环，使用操作符代替条件判断
 
  ```
- n>1,则递归执行dfs(n-1),如果n<1,即当n=1时，直接返回res+1,依次添加别的值
- var sumNums = function(n) {
-     let res = 0;
-     let dfs = function(n){
-         n>1 && dfs(n-1)>0;
-         res += n;
-         return res;
-     }
-     dfs(n);
-     return res;
- };
+n>1,则递归执行dfs(n-1),如果n<1,即当n=1时，直接返回res+1,依次添加别的值
+var sumNums = function(n) {
+    let res = 0;
+    let dfs = function(n){
+        n>1 && dfs(n-1);
+        res += n;
+        return res;
+    }
+    dfs(n);
+    return res;
+};
  ```
 
 #### [剑指 Offer 59 - I. 滑动窗口的最大值](https://leetcode-cn.com/problems/hua-dong-chuang-kou-de-zui-da-zhi-lcof/)
@@ -1474,7 +1366,7 @@ var maxSlidingWindow = function(nums, k) {
 
 单调栈解法：O(n)
 
-单调栈实际就是栈，只不过利用了一些巧妙的逻辑，使得每次新元素入栈后，占你元素都保持有序。
+单调栈实际就是栈，只不过利用了一些巧妙的逻辑，使得每次新元素入栈后，栈内元素都保持有序。
 
 在单次滑动窗口中获取最大值是O(1)的时间复杂度，单调队列就是递增或者递减，每次获取直接取得队头元素或者队尾元素即可
 
@@ -1629,7 +1521,7 @@ var isStraight = function(nums) {
 
 分析：
 
-1. 第一个删除的索引是idx=(m-1%n),因为索引从0开始。
+1. 第一个删除的索引是idx=(m-1)%n,因为索引从0开始。
 2. 删除第一个数后，数组元素个数变成n-1,而idx处的后一位元素又会补位，所以第二位删除的元素索引就变成了(idx+m-1)%(n-1)
 3. 所以被删除元素的索引就是：idx = （idx+m-1)%(n--)
 4. 另外，这个题目需要注意：参数的数量级问题。以上思路的解题时间复杂度为O(n^2),则时间复杂度达到了10^10，在leetcode中使用了9260ms，接近1秒。**好像超出1s就超时了？？？**
@@ -1704,42 +1596,7 @@ var constructArr = function(a) {
 代码：
 
 ```
-var strToInt = function(str) {
-    // 1. 过滤掉前后的空格
-    str = str.replace(/^\s+/g,'');
-    str = str.replace(/(\s+)$/g,'');
-    let min = -1*(2**31);
-    let max = 2**31-1;
-    let num;
-    // 2.去除头部的0
-    let i=0,flag=0,flag2=1;
-    while(str[i]===0){
-        i++;
-    }
-    if(str[i]>="0" && str[i]<="9"){
-        flag = i;
-        while(str[i]>="0" && str[i]<="9"){
-            i++;
-        }
-        num = Number(str.slice(flag,i));
-    }else if(str[i]==='-' || str[i]==='+'){
-        flag2 = str[i]==="-" ? -1 : 1;
-        i++;
-        // 去除头部的
-        while(str[i]===0){
-            i++;
-        }
-        flag = i;
-        while(str[i]>="0" && str[i]<="9"){
-            i++;
-        }
-        num =  i>flag ? flag2*Number(str.slice(flag,i)) : 0;
-        // console.log(num)
-    }else{
-        num = 0;
-    }
-    return num>max ? max : num<min ? min : num;
-}
+var strToInt = function(str) {    // 1. 过滤掉前后的空格    str = str.replace(/^\s+/g,'');    str = str.replace(/(\s+)$/g,'');    let min = -1*(2**31);    let max = 2**31-1;    let num;    // 2.去除头部的0    let i=0,flag=0,flag2=1;    while(str[i]===0){        i++;    }    if(str[i]>="0" && str[i]<="9"){        flag = i;        while(str[i]>="0" && str[i]<="9"){            i++;        }        num = Number(str.slice(flag,i));    }else if(str[i]==='-' || str[i]==='+'){        flag2 = str[i]==="-" ? -1 : 1;        i++;        // 去除头部的        while(str[i]===0){            i++;        }        flag = i;        while(str[i]>="0" && str[i]<="9"){            i++;        }        num =  i>flag ? flag2*Number(str.slice(flag,i)) : 0;        // console.log(num)    }else{        num = 0;    }    return num>max ? max : num<min ? min : num;}
 ```
 
 ## 排序算法：
@@ -1837,17 +1694,7 @@ push(5), pop() -> 5, pop() -> 3, pop() -> 2, pop() -> 1
 使用一个备用栈，模拟元素的入栈和出栈，从pushed数组开始，将元素依次入栈。如果某个元素是poppped中的第一个元素，则表示该元素出栈了，则将该元素出栈
 
 ```
-var validateStackSequences = function(pushed, popped) {
-    let stack = [],m=0;
-    for(let i=0;i<pushed.length;i++){
-        stack.push(pushed[i]);
-        while(stack.length>0 && stack[stack.length-1]===popped[m]){
-            stack.pop();
-            m = m+1;
-        }
-    }
-    return stack.length===0;
-};
+var validateStackSequences = function(pushed, popped) {    let stack = [],m=0;    for(let i=0;i<pushed.length;i++){        stack.push(pushed[i]);        while(stack.length>0 && stack[stack.length-1]===popped[m]){            stack.pop();            m = m+1;        }    }    return stack.length===0;};
 ```
 
 #### [剑指 Offer 20. 表示数值的字符串](https://leetcode-cn.com/problems/biao-shi-shu-zhi-de-zi-fu-chuan-lcof/)
@@ -1855,37 +1702,19 @@ var validateStackSequences = function(pushed, popped) {
 判断一个字符串中的元素是否是纯数字
 
 ```
-function isOnlyNum(s){
-	for(let c of s){
-		if(c<"0" && c>'9'){ return false; }
-	}
-	return true;
-}
+function isOnlyNum(s){	for(let c of s){		if(c<"0" && c>'9'){ return false; }	}	return true;}
 ```
 
 判断一个字符串中的元素是否是合法的小数      .12    12.    12.12
 
 ```
-function isLegalDecimal(s){
-	if(s.indexOf('.')!==-1 && s.length>1){
-		if(s.indexOf(".") ！== s.lastIndexOf(".")){return false;}
-		if(s.charAt(0) === '.') { return isOnlyNum(s.substring(1)); }  // .12
-		if(s.charAt(s.length-1) === '.') { return isOnlyNum(s.substring(1)); }  // 12.
-		let index = s.indexOf(".");
-		return s.length>2 && isOnlyNum(s.substring(0,index)) && isOnlyNum(s.substring(index+1));
-	}
-	return false;
-}
+function isLegalDecimal(s){	if(s.indexOf('.')!==-1 && s.length>1){		if(s.indexOf(".") ！== s.lastIndexOf(".")){return false;}		if(s.charAt(0) === '.') { return isOnlyNum(s.substring(1)); }  // .12		if(s.charAt(s.length-1) === '.') { return isOnlyNum(s.substring(1)); }  // 12.		let index = s.indexOf(".");		return s.length>2 && isOnlyNum(s.substring(0,index)) && isOnlyNum(s.substring(index+1));	}	return false;}
 ```
 
 判断是否是整数
 
 ```
-function checkNum( s) {    //判断是否是整数
-    if(s == null || s.length == 0) return false;
-    if(s.charAt(0) == '-' || s.charAt(0) == '+') return s.length > 1 ? isOnlyNum(s.substring(1)) : false;
-    return isOnlyNum(s);
-}
+function checkNum( s) {    //判断是否是整数    if(s == null || s.length == 0) return false;    if(s.charAt(0) == '-' || s.charAt(0) == '+') return s.length > 1 ? isOnlyNum(s.substring(1)) : false;    return isOnlyNum(s);}
 ```
 
 判断是否是整数或者是小数
@@ -2054,4 +1883,238 @@ var longestPalindrome = function(s) {
 ```
 
 或者暴力解法：双重循环，判断每一段中是否是回文字符串
+
+## JS V8模式处理
+
+http://nodejs.cn/learn/the-v8-javascript-engine
+
+V8 是为 Google Chrome 提供支持的 JavaScript 引擎的名称。 当使用 Chrome 进行浏览时，它负责处理并执行 JavaScript。V8 提供了执行 JavaScript 的运行时环境。 DOM 和其他 Web 平台 API 则由浏览器提供。
+
+### 1 单行输入
+
+1. 只有一个   比如输入是'qwqwre'
+
+```
+while (line = readline()) {
+	// 直接处理并输出即可
+    console.log(deal(line))
+}
+
+function deal(input){
+    return input.split("").reverse().join("");
+}
+```
+
+2. 单行存在两个结果   比如："abc   def"
+
+```
+var res = [];
+while (line = readline()) {
+    res = line.split(" ");   // 使用空格分隔符分割成两个
+    if(res.length === 2){
+        // 全部输入完毕再处理
+        console.log(deal(res))
+    }
+}
+```
+
+### 2 多行输入
+
+#### 2.1 确定行数
+
+输入类似于：
+
+```
+abc
+def
+```
+
+这样则每次读取一行，保存起来，当行数等于输入的行数时，则再处理
+
+```
+var res = [];
+while (line = readline()) {
+    res.push(line);
+    if(res.length === 2){
+        // 全部输入完毕再处理
+        console.log(deal(res))
+    }
+    
+}
+
+// 处理函数，返回结果
+function deal(inputs) {
+    var result = [];
+
+    // dosomething
+    var s1 = inputs[0].split("");
+    var s2 = inputs[1].split("");
+    var len = s1.length;
+    for(var i = 0;i<len;i++){
+        result.push(s1[i]);
+        result.push(s2[len-i-1]);
+    }  
+    
+    return result.join("");
+}
+```
+
+#### 2.2 不确定行数
+
+```
+var res = [];
+while (line = readline()) {
+    res.push(line);
+}
+// 全部输入完毕再处理
+console.log(deal(res))
+```
+
+## Javascript Node处理输出输出
+
+输入均需要使用文件的输入接收，输出使用console.log即可
+
+Node.js 在浏览器外运行 V8 JavaScript 引擎（Google Chrome 的内核）
+
+因为V8引擎独立于托管它的浏览器。 此关键的特性推动了 Node.js 的兴起。 V8 于 2009 年被选为为 Node.js 提供支持的引擎，并且随着 Node.js 的爆炸性发展，V8 成为了现在为大量的服务器端代码（使用 JavaScript 编写）提供支持的引擎。
+
+node.js=V8+内置基本模块（大多用JavaScript编写），nodejs不仅仅内置了V8引擎，还怼他进行了优化。`Node`对一些特殊用例进行了优化，提供了替代的`API`，使得`V8`在非浏览器环境下运行得更好。
+
+### 1 单行输入
+
+对于每一行的输入就处理一次
+
+```
+var readline = require('readline');
+
+rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+rl.on('line', function(data) {
+    // 获取输入
+    var inputs = data;
+
+    // 处理输入
+    var result = deal(inputs);
+
+    // 输出结果
+    console.log(result);
+});
+
+// 处理输入并且执行结果
+function deal(inputs) {
+    var result = inputs.split("").reverse().join("");
+
+    // dosomething
+
+    return result;
+}javascript:void(0);
+```
+
+### 2 多行输入
+
+#### 2.1 确定行数
+
+所有行的输入结束后，保存好，统一处理
+
+一组测试数据，并且该数据有K行
+
+```
+var readline = require('readline');
+
+rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+var K = 2; // 输入K行
+var inputs = [];    // 保存输入
+rl.on('line', function(data) {
+    // 获取输入
+    inputs.push(data.trim());
+    if (K == inputs.length) { //
+        // 处理
+        var result = deal(inputs);
+
+        // 输出结果，结果通过console.log，而不是return 得到
+        console.log(result);
+        // 清0
+        inputs.length = 0;
+    }
+});
+
+// 处理函数，返回结果
+function deal(inputs) {
+    var result = [];
+
+    // dosomething
+    var s1 = inputs[0].split("");
+    var s2 = inputs[1].split("");
+    var len = s1.length;
+    for(var i = 0;i<len;i++){
+        result.push(s1[i]);
+        result.push(s2[len-i-1]);
+    }  
+    
+    return result.join("");
+}
+```
+
+#### 2.2 不确定行数
+
+有好几组测试数据，并且每一组测试数据的行数不知道
+
+```
+var readline = require('readline');
+
+rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+var inputs = [];
+var num = 0;
+rl.on('line', function(data) {
+    if(num == 0){
+        num = Number(data.trim());
+    } else {
+        inputs.push(data.trim());
+        // 所有的数据均已经保存到了inputs中
+        if (num == inputs.length) {
+            // 处理
+            var result = deal(inputs);
+
+            // 输出结果
+            console.log(result);
+
+            // 清0
+            inputs.length = 0;  //不可改动
+            num = 0;    //不可改动
+        }
+    }
+});
+
+// 处理函数
+function deal(inputs) {
+    var result = 0;
+
+    // dosomething
+    var data = 
+    inputs.map(function(item){return parseInt(item.trim())}).sort(function(v1,v2){return v1-v2});
+    var len = data.length;
+    if(len%2==0){
+        var l = len/2;
+        result = Math.floor((data[l]+data[l-1])/2);
+    }else{
+        var l = (len-1)/2;
+        result = data[l]
+    }
+    
+    return result;
+}
+```
+
+## 
 
