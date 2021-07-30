@@ -1884,11 +1884,17 @@ var longestPalindrome = function(s) {
 
 或者暴力解法：双重循环，判断每一段中是否是回文字符串
 
-## JS V8模式处理
+## JS V8环境处理
+
+它就只包含V8引擎，没有结合Nodejs中的其他模块，readline方法都是牛客网提供的
 
 http://nodejs.cn/learn/the-v8-javascript-engine
 
 V8 是为 Google Chrome 提供支持的 JavaScript 引擎的名称。 当使用 Chrome 进行浏览时，它负责处理并执行 JavaScript。V8 提供了执行 JavaScript 的运行时环境。 DOM 和其他 Web 平台 API 则由浏览器提供。
+
+**牛客网提供**了readline函数，不用填写任何参数，每执行一次，就读取一行。多行输入其实就是写多个 readline()。还提供了print函数负责打印，console.log也可以继续使用
+
+JS V8应该就是在浏览器环境中运行JS代码
 
 ### 1 单行输入
 
@@ -1974,11 +1980,29 @@ console.log(deal(res))
 
 输入均需要使用文件的输入接收，输出使用console.log即可
 
-Node.js 在浏览器外运行 V8 JavaScript 引擎（Google Chrome 的内核）
-
 因为V8引擎独立于托管它的浏览器。 此关键的特性推动了 Node.js 的兴起。 V8 于 2009 年被选为为 Node.js 提供支持的引擎，并且随着 Node.js 的爆炸性发展，V8 成为了现在为大量的服务器端代码（使用 JavaScript 编写）提供支持的引擎。
 
-node.js=V8+内置基本模块（大多用JavaScript编写），nodejs不仅仅内置了V8引擎，还怼他进行了优化。`Node`对一些特殊用例进行了优化，提供了替代的`API`，使得`V8`在非浏览器环境下运行得更好。
+**node.js=V8+内置基本模块**（大多用JavaScript编写），nodejs不仅仅内置了V8引擎，还怼他进行了优化。`Node`对一些特殊用例进行了优化，提供了替代的`API`，使得`V8`在非浏览器环境下运行得更好。例如，在服务器环境中，处理二进制数据通常是必不可少的，但Javascript对此支持不足，因此，V8.Node增加了Buffer类，方便并且高效地 处理二进制数据。因此，Node不仅仅简单的使用了V8,还对其进行了优化，使其在各环境下更加给力。**引入并添加了新的内容**
+
+Node中提供一个readline模块，负责一行一行的读取可读流
+
+```
+const readline = require('readline')
+
+const rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout
+})
+
+rl.on('line', function(data) {
+    // 获取输入
+    var inputs = data;
+    // 处理输入
+    var result = deal(inputs);
+    // 输出结果
+    console.log(result);
+});
+```
 
 ### 1 单行输入
 
@@ -2116,5 +2140,200 @@ function deal(inputs) {
 }
 ```
 
-## 
+## 牛客网
+
+### 1 处理错误
+
+链接：https://www.nowcoder.com/questionTerminal/67df1d7889cf4c529576383c2e647c48
+来源：牛客网
+
+开发一个简单错误记录功能小模块，能够记录出错的代码所在的文件名称和行号。 
+  处理:
+
+1. 记录最多8条错误记录，对相同的错误记录(即文件名称和行号完全匹配)只记录一条，错误计数增加；(文件所在的目录不同，文件名和行号相同也要合并)
+2. 超过16个字符的文件名称，只记录文件的最后有效16个字符；(如果文件名不同，而只是文件名的后16个字符和行号相同，也不要合并)
+3. 输入的文件可能带路径，记录文件名称不能带路径
+
+**输出描述:**
+
+1. 将所有的记录统计并将结果输出，格式：文件名代码行数数目，一个空格隔开，如: fpgadrive.c 1325 1
+2. 结果根据不同错误的数目从多到少排序，数目相同的情况下，按照输入第一次出现顺序排序。
+       1. 如果总的错误数目超过8条记录，则只输出前8条记录.
+           2. 如果文件名的长度超过16个字符，则只输出后16个字符
+
+```
+var arr = [];
+while(line=readline()){
+    arr.push(line);
+}
+var map = {};
+var result = [];
+arr.forEach((item) => {
+    var names = item.split("\\");
+    var name = names[names.length - 1];
+    // 记录每种错误出现的次数
+    if (map[name]) {
+      map[name] += 1;
+    } else {
+      map[name] = 1;
+    }
+});
+for (var i in map) {
+	result.push({ name: i, value: map[i] });
+}
+// 按照次数从大到小排序
+result.sort((a, b) => {
+	return b.value - a.value;
+});
+result.forEach((item, index) => {
+    // 只输出前8条
+    if (index < 8) {
+      var name = item.name.split(" ")[0];
+      var lines = item.name.split(" ")[1];
+      // 如果前8条的长度大于16，则输出后16个字符
+      if (name.length > 16) {
+        name = name.substr(name.length - 16);
+      }
+      // 循环输出
+      print(name + " " + lines + " " + item.value);
+    }
+});
+```
+
+### 2 获取学生的成绩
+
+```
+let countLine = 1;
+let opCount = 0;
+let n, m; // 学生的数目和操作的数目
+let scores;
+while ((line = readline())) {
+  if (countLine == 1) {
+    [n, m] = line.split(" ");
+    scores = new Array(n);
+    countLine++;
+  } else if (countLine == 2) {
+    scores = line.split(" ");
+    for (var i = 0; i < scores.length; i++) {
+      scores[i] = parseInt(scores[i]);
+    }
+    countLine++;
+  } else {
+    const inst = line.split(" ");
+    let a = parseInt(inst[1]);
+    let b = parseInt(inst[2]);
+    if (inst[0] === "Q") {
+      [a, b] = a > b ? [b, a] : [a, b];
+      console.log(Math.max.apply(null, scores.slice(a - 1, b)));
+    } else if (inst[0] === "U") {
+      scores[a - 1] = b;
+    }
+    opCount++;
+    // 这里需要清零，不可改动
+    // 应该是如果直接在读取流中读取信息，就需要清零
+    if (opCount >= m) {
+      countLine = 1;
+      opCount = 0;
+    }
+  }
+}
+```
+
+#### [838. 推多米诺
+
+一行中有 `N` 张多米诺骨牌，我们将每张多米诺骨牌垂直竖立。
+
+在开始时，我们同时把一些多米诺骨牌向左或向右推。
+
+示例 1：
+
+输入：".L.R...LR..L.."
+输出："LL.RR.LLRRLL.."
+示例 2：
+
+输入："RR.L"
+输出："RR.L"
+说明：第一张多米诺骨牌没有给第二张施加额外的力。
+
+```
+function solve( s ) {
+    // write code here
+    let lastR = -1;
+    let s1 = s.split("");
+    for(let i=0;i<s1.length;i++){
+        if(s1[i]==='L'){
+            for(let j=i-1;j>lastR;j--){
+                s1[j] = s1[i];
+            }
+        }
+        if(s[i]==='R'){
+            let j=i+1;
+            while(j<s1.length && s1[j]==="."){
+                s1[j] = s1[i];
+                j++;
+            }
+            lastR = Math.floor((j+i)/2);
+            if((j-i-1)%2 && s1[j]==='L'){   // 如果间隔了奇数个点，并且最后一个数是L
+                s1[lastR] = "."
+            }
+            i = j-1;
+        }
+    }
+    return s1.join("");
+}
+```
+
+## 赛码网
+
+**度度熊找子串（百度2017秋招真题）**
+
+度度熊收到了一个只有小写字母的字符串S，他对S的子串产生了兴趣，S的子串为S中任意连续的一段。他发现，一些子串只由一种字母构成，他想知道在S中一共有多少种这样的子串。例如在串”aaabbaa”中，度度熊想找的子串有”a”,”aa”,”aaa”,”b”,”bb”五种。
+
+```
+function readLine() {
+     var line = "";
+     var next = read_line();
+     while(next.length >= 1024) {
+          line += next;
+          next = read_line();
+     }
+     line += next;
+     return line;
+}
+
+var str = readLine();
+var mark = {};  // 记录每一种字符连续出现的最大次数{a:3,b:2}
+var prev = str.charAt(0);
+var o = {};   //记录每一个字符连续出现的次数,{a:3}
+o[prev] = 1;
+for(var i = 1; i < str.length; i++){
+  var char = str[i];
+  if(char == prev){
+    if(o[char]){
+      o[char]++;
+    }else{
+      o[char] = 1;
+    }
+  }else{
+    if(!mark[prev] || mark[prev] < o[prev]){
+      mark[prev] = o[prev];
+    }
+    prev = char;
+    o = {};
+    o[char] = 1;
+  }
+}
+if(!mark[prev] || mark[prev] < o[prev]){
+  mark[prev] = o[prev];
+}
+var sum = 0;
+for(x in mark){
+  sum += mark[x];
+}
+print(sum);
+
+
+```
+
+
 
